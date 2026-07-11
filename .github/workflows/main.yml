@@ -1,0 +1,51 @@
+name: Build ad-free APK
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Cordova
+        run: npm install -g cordova
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android SDK Licenses
+        run: yes | sdkmanager --licenses || true
+
+      - name: Create Android App
+        run: |
+          cordova create app com.hari.editor "HARIEditorPro"
+          cd app
+          cordova platform add android
+          rm -rf www/*
+          if [ -f ../index.html ]; then
+            cp ../index.html www/index.html
+          else
+            echo "Error: index.html not found in root directory!" && exit 1
+          fi
+          cordova build android --no-telemetry --device
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+
+      - name: Upload Clean APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: HARI-Editor-Pro-APK
+          path: app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
