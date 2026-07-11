@@ -1,0 +1,3217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HARI Editor Pro+ — Ultimate Photo Editor</title>
+  <meta name="description" content="HARI Editor Pro+ — 100% client-side, no uploads, no tracking. Advanced photo editing with layers, blending, and effects." />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; frame-ancestors 'none'; base-uri 'self';" />
+  <style>
+    /* ─── Reset & Variables ─── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    :root {
+      --bg-primary: #0d0d0f;
+      --bg-secondary: #18181c;
+      --bg-panel: #1e1e24;
+      --bg-card: #25252d;
+      --border-color: #33333d;
+      --text-primary: #f0f0f2;
+      --text-secondary: #a0a0b0;
+      --accent: #f5a623;
+      --accent-hover: #f7b840;
+      --accent-dim: rgba(245, 166, 35, 0.15);
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      --radius: 10px;
+      --radius-sm: 6px;
+      --transition: 0.15s ease;
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --panel-width: 340px;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html,
+    body {
+      height: 100%;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font);
+      overflow: hidden;
+      user-select: none;
+    }
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      font-size: 12px;
+      transition: background var(--transition), transform var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid transparent;
+    }
+    button:hover {
+      background: var(--border-color);
+    }
+    button:active {
+      transform: scale(0.96);
+    }
+    button.primary {
+      background: var(--accent);
+      color: #0d0d0f;
+      font-weight: 600;
+      border-color: var(--accent);
+    }
+    button.primary:hover {
+      background: var(--accent-hover);
+    }
+    button.danger {
+      background: #cf3e3e;
+      color: #fff;
+      border-color: #cf3e3e;
+    }
+    button.danger:hover {
+      background: #e05050;
+    }
+    button.icon-btn {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      justify-content: center;
+      font-size: 16px;
+      border-radius: 50%;
+      background: transparent;
+    }
+    button.icon-btn:hover {
+      background: var(--bg-card);
+    }
+    input[type="range"] {
+      width: 100%;
+      height: 3px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-color);
+      border-radius: 3px;
+      outline: none;
+      transition: background var(--transition);
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 2px solid var(--bg-primary);
+      box-shadow: 0 0 8px rgba(245, 166, 35, 0.3);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 2px solid var(--bg-primary);
+    }
+    input[type="number"],
+    input[type="text"],
+    select {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-family: inherit;
+      transition: border var(--transition);
+    }
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+    label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .label-row span {
+      font-size: 11px;
+      color: var(--text-secondary);
+      min-width: 28px;
+      text-align: right;
+    }
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
+
+    /* ─── Layout ─── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── Top Bar ─── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+      height: 48px;
+      z-index: 20;
+    }
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo span {
+      background: var(--accent);
+      color: #0d0d0f;
+      padding: 0 8px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .logo .accent {
+      color: var(--accent);
+    }
+    .top-bar-center {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .privacy-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #6fcf97;
+      background: rgba(111, 207, 151, 0.12);
+      padding: 2px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(111, 207, 151, 0.2);
+      font-weight: 500;
+      margin-right: 8px;
+    }
+    .privacy-badge .lock {
+      font-size: 13px;
+    }
+
+    /* ─── Main Area ─── */
+    .main-area {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ─── Left Panel ─── */
+    .left-panel {
+      width: var(--panel-width);
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+      z-index: 10;
+    }
+    .panel-tabs {
+      display: flex;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+      overflow-x: auto;
+      padding: 0 4px;
+    }
+    .panel-tabs button {
+      background: transparent;
+      border: none;
+      padding: 8px 12px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      white-space: nowrap;
+    }
+    .panel-tabs button:hover {
+      color: var(--text-primary);
+      background: transparent;
+    }
+    .panel-tabs button.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 14px;
+    }
+    .panel-content .tool-section {
+      display: none;
+    }
+    .panel-content .tool-section.active {
+      display: block;
+    }
+
+    /* ─── Canvas Area ─── */
+    .canvas-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: var(--bg-primary);
+      overflow: hidden;
+      padding: 12px;
+    }
+    .canvas-wrapper {
+      position: relative;
+      display: inline-block;
+      box-shadow: var(--shadow);
+      border-radius: var(--radius-sm);
+      background: repeating-conic-gradient(var(--bg-card) 0% 25%, #1a1a22 0% 50%) 0 0 / 20px 20px;
+    }
+    .canvas-wrapper canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius-sm);
+    }
+    .canvas-wrapper .overlay-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      border-radius: var(--radius-sm);
+    }
+    .canvas-wrapper .overlay-canvas.interactive {
+      pointer-events: auto;
+    }
+    .canvas-wrapper .crop-overlay {
+      display: none;
+      position: absolute;
+      border: 2px dashed rgba(245, 166, 35, 0.9);
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 15;
+      border-radius: 2px;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+      pointer-events: none;
+    }
+    .canvas-wrapper .crop-overlay.active {
+      display: block;
+      pointer-events: auto;
+    }
+    .crop-overlay .crop-handle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: var(--accent);
+      border: 2px solid #0d0d0f;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+    }
+    .crop-handle.nw {
+      top: -5px;
+      left: -5px;
+      cursor: nw-resize;
+    }
+    .crop-handle.ne {
+      top: -5px;
+      right: -5px;
+      cursor: ne-resize;
+    }
+    .crop-handle.sw {
+      bottom: -5px;
+      left: -5px;
+      cursor: sw-resize;
+    }
+    .crop-handle.se {
+      bottom: -5px;
+      right: -5px;
+      cursor: se-resize;
+    }
+    .crop-handle.n {
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      cursor: n-resize;
+    }
+    .crop-handle.s {
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      cursor: s-resize;
+    }
+    .crop-handle.w {
+      top: 50%;
+      left: -5px;
+      transform: translateY(-50%);
+      cursor: w-resize;
+    }
+    .crop-handle.e {
+      top: 50%;
+      right: -5px;
+      transform: translateY(-50%);
+      cursor: e-resize;
+    }
+    .crop-info {
+      position: absolute;
+      bottom: -26px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 12px;
+      border-radius: 10px;
+      white-space: nowrap;
+      pointer-events: none;
+      font-weight: 500;
+    }
+    .grid-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+      background-size: 30px 30px;
+      border-radius: var(--radius-sm);
+    }
+    .grid-overlay.active {
+      display: block;
+    }
+
+    /* ─── Upload Zone ─── */
+    .upload-zone {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-primary);
+      z-index: 30;
+      border-radius: var(--radius-sm);
+      transition: opacity 0.3s ease;
+    }
+    .upload-zone.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .upload-zone .upload-icon {
+      font-size: 56px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+    .upload-zone h2 {
+      font-weight: 300;
+      font-size: 22px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .upload-zone p {
+      color: var(--text-secondary);
+      font-size: 13px;
+      opacity: 0.6;
+      margin-bottom: 16px;
+    }
+    .upload-zone .upload-btn {
+      padding: 10px 36px;
+      font-size: 15px;
+      border-radius: 30px;
+    }
+    .upload-zone.dragover {
+      background: var(--bg-card);
+      border: 2px dashed var(--accent);
+    }
+    .upload-zone.dragover .upload-icon {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    /* ─── Bottom Bar ─── */
+    .bottom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 16px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      flex-shrink: 0;
+      height: 40px;
+      z-index: 5;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .bottom-bar .left,
+    .bottom-bar .right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bottom-bar .zoom-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .bottom-bar .zoom-controls span {
+      min-width: 36px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    /* ─── Panel Controls ─── */
+    .control-group {
+      margin-bottom: 14px;
+    }
+    .control-group label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
+    .control-group .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .control-group .slider-row input[type="range"] {
+      flex: 1;
+    }
+    .control-group .slider-row .value {
+      min-width: 28px;
+      text-align: right;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .filter-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .filter-buttons button {
+      font-size: 11px;
+      padding: 3px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-secondary);
+    }
+    .filter-buttons button.active-filter {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+    .filter-buttons button:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+    .curve-editor {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      width: 100%;
+      height: 120px;
+      cursor: crosshair;
+      margin-top: 4px;
+      touch-action: none;
+    }
+    .histogram-canvas {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      width: 100%;
+      height: 60px;
+      margin-top: 4px;
+    }
+    .color-picker-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .color-picker-row input[type="color"] {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--border-color);
+      border-radius: 4px;
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+    }
+    .color-picker-row input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+    .color-picker-row input[type="color"]::-webkit-color-swatch {
+      border: none;
+      border-radius: 2px;
+    }
+    .blend-mode-select {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+    }
+    .effect-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 900px) {
+      :root {
+        --panel-width: 280px;
+      }
+    }
+    @media (max-width: 700px) {
+      .left-panel {
+        width: 100%;
+        height: 45vh;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .main-area {
+        flex-direction: column;
+      }
+      .canvas-area {
+        height: 55vh;
+        padding: 8px;
+      }
+      .top-bar {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 4px 10px;
+        gap: 4px;
+      }
+      .privacy-badge {
+        display: none;
+      }
+      .top-bar-center {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        margin-top: 2px;
+      }
+    }
+    @media (max-width: 480px) {
+      .panel-tabs button {
+        font-size: 10px;
+        padding: 6px 8px;
+      }
+      .panel-content {
+        padding: 8px 10px;
+      }
+      .control-group {
+        margin-bottom: 10px;
+      }
+      .curve-editor {
+        height: 80px;
+      }
+      .histogram-canvas {
+        height: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div class="logo">
+        🖼️ HARI <span>editor</span>
+        <span style="font-size:11px;font-weight:400;color:var(--text-secondary);margin-left:4px;">Pro+</span>
+      </div>
+      <div class="top-bar-center">
+        <button class="icon-btn" id="undoBtn" title="Undo (Ctrl+Z)" disabled>↩</button>
+        <button class="icon-btn" id="redoBtn" title="Redo (Ctrl+Y)" disabled>↪</button>
+        <button class="icon-btn" id="resetBtn" title="Reset Image" style="color:#cf3e3e;">↺</button>
+        <button class="icon-btn" id="gridToggle" title="Toggle Grid">⊞</button>
+        <button class="icon-btn" id="beforeAfterBtn" title="Hold to view original">◐</button>
+        <button class="icon-btn" id="autoEnhanceBtn" title="Auto Enhance">✨</button>
+      </div>
+      <div class="top-bar-right">
+        <div class="privacy-badge">
+          <span class="lock">🔒</span> 100% Private
+        </div>
+        <button id="exportBtn" class="primary" disabled>⬇ Export</button>
+      </div>
+    </header>
+
+    <!-- Main Area -->
+    <div class="main-area">
+      <!-- Left Panel -->
+      <div class="left-panel" id="leftPanel">
+        <div class="panel-tabs" id="panelTabs">
+          <button class="active" data-tab="adjust">Adjust</button>
+          <button data-tab="color">Color</button>
+          <button data-tab="filters">Filters</button>
+          <button data-tab="effects">Effects</button>
+          <button data-tab="transform">Transform</button>
+          <button data-tab="crop">Crop</button>
+          <button data-tab="draw">Draw</button>
+          <button data-tab="export">Export</button>
+        </div>
+        <div class="panel-content" id="panelContent">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Canvas Area -->
+      <div class="canvas-area" id="canvasArea">
+        <div class="canvas-wrapper" id="canvasWrapper">
+          <canvas id="mainCanvas"></canvas>
+          <canvas id="overlayCanvas" class="overlay-canvas"></canvas>
+          <div class="crop-overlay" id="cropOverlay">
+            <div class="crop-handle nw" data-handle="nw"></div>
+            <div class="crop-handle n" data-handle="n"></div>
+            <div class="crop-handle ne" data-handle="ne"></div>
+            <div class="crop-handle w" data-handle="w"></div>
+            <div class="crop-handle e" data-handle="e"></div>
+            <div class="crop-handle sw" data-handle="sw"></div>
+            <div class="crop-handle s" data-handle="s"></div>
+            <div class="crop-handle se" data-handle="se"></div>
+            <div class="crop-info" id="cropInfo">—</div>
+          </div>
+          <div class="grid-overlay" id="gridOverlay"></div>
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">🖼️</div>
+            <h2>Drop your image here</h2>
+            <p>or click to browse · JPG, PNG, WebP</p>
+            <button class="upload-btn primary" id="uploadBtn">Choose Image</button>
+            <input type="file" id="fileInput" accept="image/*" style="display:none;" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="bottom-bar">
+      <div class="left">
+        <span id="statusText">No image loaded</span>
+        <span style="margin-left:8px;opacity:0.5;">|</span>
+        <span id="imageInfo" style="opacity:0.6;"></span>
+      </div>
+      <div class="right">
+        <div class="zoom-controls">
+          <button class="icon-btn" id="zoomOutBtn">−</button>
+          <span id="zoomLevel">100%</span>
+          <button class="icon-btn" id="zoomInBtn">+</button>
+          <button class="icon-btn" id="zoomFitBtn">⧉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //  HARI Editor Pro+ — Full Client-Side Photo Editor
+    //  All processing via Canvas API.  No data leaves your device.
+    //  New features: Blending modes, Gradient Maps, Vignette,
+    //  Tilt-Shift, Auto Enhance, Spline Curves, Posterize, Oil Paint.
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    (() => {
+      'use strict';
+
+      // ─── DOM refs ────────────────────────────────────────────────
+      const canvas = document.getElementById('mainCanvas');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      const overlayCanvas = document.getElementById('overlayCanvas');
+      const overlayCtx = overlayCanvas.getContext('2d', { willReadFrequently: true });
+      const canvasWrapper = document.getElementById('canvasWrapper');
+      const uploadZone = document.getElementById('uploadZone');
+      const fileInput = document.getElementById('fileInput');
+      const uploadBtn = document.getElementById('uploadBtn');
+      const statusText = document.getElementById('statusText');
+      const imageInfo = document.getElementById('imageInfo');
+      const zoomLevel = document.getElementById('zoomLevel');
+      const undoBtn = document.getElementById('undoBtn');
+      const redoBtn = document.getElementById('redoBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const exportBtn = document.getElementById('exportBtn');
+      const gridToggle = document.getElementById('gridToggle');
+      const beforeAfterBtn = document.getElementById('beforeAfterBtn');
+      const autoEnhanceBtn = document.getElementById('autoEnhanceBtn');
+      const cropOverlay = document.getElementById('cropOverlay');
+      const gridOverlay = document.getElementById('gridOverlay');
+      const panelTabs = document.getElementById('panelTabs');
+      const panelContent = document.getElementById('panelContent');
+      const zoomInBtn = document.getElementById('zoomInBtn');
+      const zoomOutBtn = document.getElementById('zoomOutBtn');
+      const zoomFitBtn = document.getElementById('zoomFitBtn');
+
+      // ─── State ──────────────────────────────────────────────────
+      const state = {
+        image: null,
+        imageData: null,
+        displayWidth: 0,
+        displayHeight: 0,
+        zoom: 1,
+        fitZoom: 1,
+        history: [],
+        historyIndex: -1,
+        maxHistory: 50,
+        isDirty: false,
+        adjust: {
+          exposure: 0,
+          contrast: 0,
+          highlights: 0,
+          shadows: 0,
+          whites: 0,
+          blacks: 0,
+          temperature: 0,
+          tint: 0,
+          vibrance: 0,
+          saturation: 0,
+          clarity: 0,
+          dehaze: 0,
+          sharpness: 0,
+          blur: 0,
+        },
+        curves: {
+          rgb: Array.from({ length: 256 }, (_, i) => i),
+          red: Array.from({ length: 256 }, (_, i) => i),
+          green: Array.from({ length: 256 }, (_, i) => i),
+          blue: Array.from({ length: 256 }, (_, i) => i),
+        },
+        levels: {
+          inputBlack: 0,
+          inputWhite: 255,
+          outputBlack: 0,
+          outputWhite: 255,
+        },
+        filters: {
+          grayscale: false,
+          sepia: false,
+          invert: false,
+          vintage: false,
+          warm: false,
+          cool: false,
+          duotone: false,
+          edge: false,
+          emboss: false,
+          pixelate: 0,
+          posterize: 0,
+          oil: 0,
+        },
+        effects: {
+          vignette: 0,
+          tiltShift: 0,
+          gradientMap: false,
+          gradientColors: ['#000000', '#ffffff'],
+        },
+        crop: {
+          active: false,
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+          aspectRatio: null,
+          startX: 0,
+          startY: 0,
+          dragging: false,
+          handle: null,
+          startRect: null,
+        },
+        transform: {
+          rotation: 0,
+          flipH: false,
+          flipV: false,
+        },
+        draw: {
+          tool: 'brush',
+          color: '#ffffff',
+          size: 10,
+          opacity: 1.0,
+          blendMode: 'source-over', // 'source-over', 'multiply', 'screen', 'overlay', 'difference'
+          text: 'Hello',
+          fontSize: 24,
+        },
+        export: {
+          format: 'png',
+          quality: 92,
+          width: 0,
+          height: 0,
+        },
+        activeTab: 'adjust',
+        isDrawing: false,
+        lastX: 0,
+        lastY: 0,
+        zoomPan: { x: 0, y: 0 },
+        showGrid: false,
+        beforeAfter: false,
+      };
+
+      // ─── Helpers ────────────────────────────────────────────────
+
+      function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+      function lerp(a, b, t) { return a + (b - a) * t; }
+
+      function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        } : { r: 255, g: 255, b: 255 };
+      }
+
+      function rgbToHex(r, g, b) {
+        return '#' + [r, g, b].map(c => clamp(Math.round(c), 0, 255).toString(16).padStart(2, '0')).join('');
+      }
+
+      // ─── Canvas sizing ──────────────────────────────────────────
+
+      function fitCanvasToContainer() {
+        const container = document.getElementById('canvasArea');
+        const rect = container.getBoundingClientRect();
+        const pad = 20;
+        const availW = rect.width - pad;
+        const availH = rect.height - pad;
+
+        if (!state.image) {
+          canvas.width = 800;
+          canvas.height = 600;
+          canvas.style.width = '800px';
+          canvas.style.height = '600px';
+          overlayCanvas.width = 800;
+          overlayCanvas.height = 600;
+          state.zoom = 1;
+          state.fitZoom = 1;
+          updateZoomDisplay();
+          return;
+        }
+
+        const imgW = state.image.width;
+        const imgH = state.image.height;
+        const fitW = Math.min(availW, imgW);
+        const fitH = Math.min(availH, imgH);
+        const scaleX = fitW / imgW;
+        const scaleY = fitH / imgH;
+        const fitScale = Math.min(scaleX, scaleY, 1);
+
+        state.fitZoom = fitScale;
+        const zoom = state.zoom || 1;
+        const displayW = imgW * zoom * fitScale;
+        const displayH = imgH * zoom * fitScale;
+
+        canvas.width = imgW;
+        canvas.height = imgH;
+        canvas.style.width = displayW + 'px';
+        canvas.style.height = displayH + 'px';
+
+        overlayCanvas.width = imgW;
+        overlayCanvas.height = imgH;
+        overlayCanvas.style.width = displayW + 'px';
+        overlayCanvas.style.height = displayH + 'px';
+
+        state.displayWidth = displayW;
+        state.displayHeight = displayH;
+
+        updateZoomDisplay();
+        renderImage();
+      }
+
+      function updateZoomDisplay() {
+        const pct = Math.round((state.zoom || 1) * 100);
+        zoomLevel.textContent = pct + '%';
+      }
+
+      // ─── Rendering pipeline ─────────────────────────────────────
+
+      function renderImage() {
+        if (!state.image) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+          return;
+        }
+
+        // Draw base image
+        ctx.drawImage(state.image, 0, 0, canvas.width, canvas.height);
+
+        // Apply all adjustments
+        applyAllAdjustments();
+
+        // Update crop overlay
+        updateCropOverlay();
+
+        if (state.image) {
+          imageInfo.textContent = `${state.image.width}×${state.image.height}`;
+        }
+      }
+
+      function applyAllAdjustments() {
+        const w = canvas.width,
+          h = canvas.height;
+        const imageData = ctx.getImageData(0, 0, w, h);
+        const data = imageData.data;
+        const len = data.length;
+
+        // Convert to float
+        const float = new Float32Array(len);
+        for (let i = 0; i < len; i++) float[i] = data[i] / 255;
+
+        // ── Adjustments ──
+        applyAdjustments(float, w, h);
+
+        // ── Curves ──
+        applyCurves(float, w, h);
+
+        // ── Levels ──
+        applyLevels(float, w, h);
+
+        // ── Filters (including posterize, oil) ──
+        applyFilters(float, w, h);
+
+        // ── Effects (vignette, tilt-shift, gradient map) ──
+        applyEffects(float, w, h);
+
+        // ── Blur & Sharpness ──
+        const blurAmt = state.adjust.blur;
+        if (blurAmt > 0) {
+          const radius = Math.max(1, Math.round(blurAmt * 2));
+          const tempData = new Uint8ClampedArray(len);
+          for (let i = 0; i < len; i++) tempData[i] = Math.round(clamp(float[i] * 255, 0, 255));
+          const tempImg = new ImageData(tempData, w, h);
+          const blurred = boxBlur(tempImg, radius);
+          for (let i = 0; i < len; i++) float[i] = blurred.data[i] / 255;
+        }
+
+        const sharp = state.adjust.sharpness;
+        if (sharp > 0) {
+          const strength = sharp / 100;
+          const tempData = new Uint8ClampedArray(len);
+          for (let i = 0; i < len; i++) tempData[i] = Math.round(clamp(float[i] * 255, 0, 255));
+          const tempImg = new ImageData(tempData, w, h);
+          const blurred = boxBlur(tempImg, 2);
+          for (let i = 0; i < len; i++) {
+            const diff = (float[i] * 255) - blurred.data[i];
+            float[i] = clamp((float[i] * 255 + diff * strength) / 255, 0, 1);
+          }
+        }
+
+        // Convert back
+        for (let i = 0; i < len; i++) {
+          data[i] = Math.round(clamp(float[i] * 255, 0, 255));
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+
+        // Draw overlay (drawing with blend mode)
+        drawOverlay();
+      }
+
+      // ─── Adjustment functions ──────────────────────────────────
+
+      function applyAdjustments(float, w, h) {
+        const len = float.length;
+        const exp = state.adjust.exposure;
+        if (exp !== 0) {
+          const factor = Math.pow(2, exp);
+          for (let i = 0; i < len; i++) float[i] = clamp(float[i] * factor, 0, 1);
+        }
+
+        const temp = state.adjust.temperature / 100;
+        const tint = state.adjust.tint / 100;
+        if (temp !== 0 || tint !== 0) {
+          for (let i = 0; i < len; i += 4) {
+            let r = float[i],
+              g = float[i + 1],
+              b = float[i + 2];
+            r = clamp(r + temp * 0.15, 0, 1);
+            b = clamp(b - temp * 0.15, 0, 1);
+            g = clamp(g + tint * 0.1, 0, 1);
+            float[i] = r;
+            float[i + 1] = g;
+            float[i + 2] = b;
+          }
+        }
+
+        const contrast = state.adjust.contrast / 100;
+        if (contrast !== 0) {
+          const c = contrast > 0 ? 1 / (1 - contrast) : 1 + contrast;
+          for (let i = 0; i < len; i++) {
+            float[i] = clamp(((float[i] - 0.5) * c + 0.5), 0, 1);
+          }
+        }
+
+        const highlights = state.adjust.highlights / 100;
+        const shadows = state.adjust.shadows / 100;
+        const whites = state.adjust.whites / 100;
+        const blacks = state.adjust.blacks / 100;
+        if (highlights !== 0 || shadows !== 0 || whites !== 0 || blacks !== 0) {
+          for (let i = 0; i < len; i++) {
+            let v = float[i];
+            if (highlights !== 0) {
+              const h = highlights > 0 ? 1 + highlights : 1 + highlights;
+              v = v > 0.5 ? clamp((v - 0.5) * h + 0.5, 0, 1) : v;
+            }
+            if (shadows !== 0) {
+              const s = shadows > 0 ? 1 + shadows : 1 + shadows;
+              v = v < 0.5 ? clamp(v * s, 0, 1) : v;
+            }
+            if (whites !== 0) {
+              const w = whites > 0 ? 1 + whites : 1 + whites;
+              v = v > 0.8 ? clamp((v - 0.8) * w + 0.8, 0, 1) : v;
+            }
+            if (blacks !== 0) {
+              const b = blacks > 0 ? 1 + blacks : 1 + blacks;
+              v = v < 0.2 ? clamp(v * b, 0, 1) : v;
+            }
+            float[i] = clamp(v, 0, 1);
+          }
+        }
+
+        const vibrance = state.adjust.vibrance / 100;
+        if (vibrance !== 0) {
+          for (let i = 0; i < len; i += 4) {
+            const r = float[i],
+              g = float[i + 1],
+              b = float[i + 2];
+            const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+            const sat = Math.sqrt((r - gray) ** 2 + (g - gray) ** 2 + (b - gray) ** 2);
+            const factor = vibrance > 0 ? 1 + vibrance * 2 : 1 + vibrance;
+            const newSat = clamp(sat * factor, 0, 0.7);
+            if (sat > 0.01) {
+              const scale = newSat / sat;
+              float[i] = clamp(gray + (r - gray) * scale, 0, 1);
+              float[i + 1] = clamp(gray + (g - gray) * scale, 0, 1);
+              float[i + 2] = clamp(gray + (b - gray) * scale, 0, 1);
+            }
+          }
+        }
+
+        const sat = state.adjust.saturation / 100;
+        if (sat !== 0) {
+          const s = sat > 0 ? 1 + sat * 2 : 1 + sat;
+          for (let i = 0; i < len; i += 4) {
+            const r = float[i],
+              g = float[i + 1],
+              b = float[i + 2];
+            const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+            float[i] = clamp(lerp(gray, r, s), 0, 1);
+            float[i + 1] = clamp(lerp(gray, g, s), 0, 1);
+            float[i + 2] = clamp(lerp(gray, b, s), 0, 1);
+          }
+        }
+
+        const clarity = state.adjust.clarity / 100;
+        if (clarity !== 0) {
+          const tempData = new Uint8ClampedArray(len);
+          for (let i = 0; i < len; i++) tempData[i] = Math.round(float[i] * 255);
+          const tempImg = new ImageData(tempData, w, h);
+          const blurred = boxBlur(tempImg, 2);
+          for (let i = 0; i < len; i++) {
+            const diff = (float[i] * 255) - blurred.data[i];
+            float[i] = clamp((float[i] * 255 + diff * clarity) / 255, 0, 1);
+          }
+        }
+
+        const dehaze = state.adjust.dehaze / 100;
+        if (dehaze !== 0) {
+          const d = dehaze > 0 ? 1 + dehaze : 1 + dehaze;
+          for (let i = 0; i < len; i++) {
+            float[i] = clamp((float[i] - 0.5) * d + 0.5, 0, 1);
+          }
+        }
+      }
+
+      // ─── Curves with spline interpolation ──────────────────────
+
+      function applyCurves(float, w, h) {
+        const channels = ['rgb', 'red', 'green', 'blue'];
+        const len = float.length;
+        // For each channel, we apply the curve.
+        // We'll apply RGB curve on all channels, then individual.
+        const rgbCurve = state.curves.rgb;
+        const rCurve = state.curves.red;
+        const gCurve = state.curves.green;
+        const bCurve = state.curves.blue;
+
+        // Check identity
+        let identity = true;
+        for (let i = 0; i < 256; i++) {
+          if (rgbCurve[i] !== i || rCurve[i] !== i || gCurve[i] !== i || bCurve[i] !== i) { identity = false; break; }
+        }
+        if (identity) return;
+
+        for (let i = 0; i < len; i += 4) {
+          let r = Math.round(float[i] * 255);
+          let g = Math.round(float[i + 1] * 255);
+          let b = Math.round(float[i + 2] * 255);
+          // Apply individual curves
+          r = clamp(rCurve[r] || r, 0, 255);
+          g = clamp(gCurve[g] || g, 0, 255);
+          b = clamp(bCurve[b] || b, 0, 255);
+          // Apply RGB curve
+          r = clamp(rgbCurve[r] || r, 0, 255);
+          g = clamp(rgbCurve[g] || g, 0, 255);
+          b = clamp(rgbCurve[b] || b, 0, 255);
+          float[i] = r / 255;
+          float[i + 1] = g / 255;
+          float[i + 2] = b / 255;
+        }
+      }
+
+      // ─── Levels ──────────────────────────────────────────────────
+
+      function applyLevels(float, w, h) {
+        const inBlack = state.levels.inputBlack;
+        const inWhite = state.levels.inputWhite;
+        const outBlack = state.levels.outputBlack;
+        const outWhite = state.levels.outputWhite;
+        if (inBlack === 0 && inWhite === 255 && outBlack === 0 && outWhite === 255) return;
+        const len = float.length;
+        for (let i = 0; i < len; i++) {
+          let v = float[i] * 255;
+          v = clamp((v - inBlack) / (inWhite - inBlack) * (outWhite - outBlack) + outBlack, 0, 255);
+          float[i] = v / 255;
+        }
+      }
+
+      // ─── Filters ──────────────────────────────────────────────────
+
+      function applyFilters(float, w, h) {
+        const f = state.filters;
+        const len = float.length;
+
+        if (f.grayscale) {
+          for (let i = 0; i < len; i += 4) {
+            const gray = 0.299 * float[i] + 0.587 * float[i + 1] + 0.114 * float[i + 2];
+            float[i] = float[i + 1] = float[i + 2] = gray;
+          }
+        }
+        if (f.sepia) {
+          for (let i = 0; i < len; i += 4) {
+            const r = float[i],
+              g = float[i + 1],
+              b = float[i + 2];
+            float[i] = clamp(r * 0.393 + g * 0.769 + b * 0.189, 0, 1);
+            float[i + 1] = clamp(r * 0.349 + g * 0.686 + b * 0.168, 0, 1);
+            float[i + 2] = clamp(r * 0.272 + g * 0.534 + b * 0.131, 0, 1);
+          }
+        }
+        if (f.invert) {
+          for (let i = 0; i < len; i++) float[i] = 1 - float[i];
+        }
+        if (f.vintage) {
+          for (let i = 0; i < len; i += 4) {
+            const r = float[i],
+              g = float[i + 1],
+              b = float[i + 2];
+            float[i] = clamp(r * 1.2 + g * 0.05, 0, 1);
+            float[i + 1] = clamp(g * 0.9 + b * 0.1, 0, 1);
+            float[i + 2] = clamp(b * 0.7 + r * 0.1, 0, 1);
+          }
+        }
+        if (f.warm) {
+          for (let i = 0; i < len; i += 4) {
+            float[i] = clamp(float[i] * 1.15, 0, 1);
+            float[i + 1] = clamp(float[i + 1] * 1.05, 0, 1);
+            float[i + 2] = clamp(float[i + 2] * 0.85, 0, 1);
+          }
+        }
+        if (f.cool) {
+          for (let i = 0; i < len; i += 4) {
+            float[i] = clamp(float[i] * 0.85, 0, 1);
+            float[i + 1] = clamp(float[i + 1] * 0.95, 0, 1);
+            float[i + 2] = clamp(float[i + 2] * 1.15, 0, 1);
+          }
+        }
+        if (f.duotone) {
+          const c1 = { r: 0.2, g: 0.4, b: 0.8 };
+          const c2 = { r: 0.9, g: 0.6, b: 0.1 };
+          for (let i = 0; i < len; i += 4) {
+            const gray = 0.299 * float[i] + 0.587 * float[i + 1] + 0.114 * float[i + 2];
+            float[i] = lerp(c1.r, c2.r, gray);
+            float[i + 1] = lerp(c1.g, c2.g, gray);
+            float[i + 2] = lerp(c1.b, c2.b, gray);
+          }
+        }
+        if (f.edge) {
+          const tempData = new Uint8ClampedArray(len);
+          for (let i = 0; i < len; i++) tempData[i] = Math.round(clamp(float[i] * 255, 0, 255));
+          const tempImg = new ImageData(tempData, w, h);
+          const kernel = [-1, -1, -1, -1, 8, -1, -1, -1, -1];
+          const conv = convolve(tempImg, kernel, 1);
+          for (let i = 0; i < len; i++) float[i] = conv.data[i] / 255;
+        }
+        if (f.emboss) {
+          const tempData = new Uint8ClampedArray(len);
+          for (let i = 0; i < len; i++) tempData[i] = Math.round(clamp(float[i] * 255, 0, 255));
+          const tempImg = new ImageData(tempData, w, h);
+          const kernel = [-2, -1, 0, -1, 1, 1, 0, 1, 2];
+          const conv = convolve(tempImg, kernel, 1);
+          for (let i = 0; i < len; i++) float[i] = clamp(conv.data[i] / 255 + 0.5, 0, 1);
+        }
+
+        // Posterize
+        const posterize = f.posterize;
+        if (posterize > 0) {
+          const levels = Math.max(2, Math.round(posterize * 2));
+          const step = 1 / (levels - 1);
+          for (let i = 0; i < len; i++) {
+            float[i] = Math.round(float[i] / step) * step;
+          }
+        }
+
+        // Oil paint (simplified: replace with neighborhood median)
+        const oil = f.oil;
+        if (oil > 0) {
+          const radius = Math.max(1, Math.round(oil * 2));
+          const tempData = new Uint8ClampedArray(len);
+          for (let i = 0; i < len; i++) tempData[i] = Math.round(clamp(float[i] * 255, 0, 255));
+          const tempImg = new ImageData(tempData, w, h);
+          const out = new Uint8ClampedArray(len);
+          for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+              const idx = (y * w + x) * 4;
+              let rHist = new Array(256).fill(0),
+                gHist = new Array(256).fill(0),
+                bHist = new Array(256).fill(0);
+              for (let dy = -radius; dy <= radius; dy++) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                  const px = clamp(x + dx, 0, w - 1);
+                  const py = clamp(y + dy, 0, h - 1);
+                  const p = (py * w + px) * 4;
+                  rHist[tempData[p]]++;
+                  gHist[tempData[p + 1]]++;
+                  bHist[tempData[p + 2]]++;
+                }
+              }
+              let rMax = 0,
+                gMax = 0,
+                bMax = 0;
+              let rVal = 0,
+                gVal = 0,
+                bVal = 0;
+              for (let i = 0; i < 256; i++) {
+                if (rHist[i] > rMax) { rMax = rHist[i];
+                  rVal = i; }
+                if (gHist[i] > gMax) { gMax = gHist[i];
+                  gVal = i; }
+                if (bHist[i] > bMax) { bMax = bHist[i];
+                  bVal = i; }
+              }
+              out[idx] = rVal;
+              out[idx + 1] = gVal;
+              out[idx + 2] = bVal;
+              out[idx + 3] = tempData[idx + 3];
+            }
+          }
+          for (let i = 0; i < len; i++) float[i] = out[i] / 255;
+        }
+
+        // Pixelate (already handled in main pipeline)
+        const pixelate = f.pixelate;
+        if (pixelate > 0) {
+          const size = Math.max(1, Math.round(pixelate * 2));
+          for (let y = 0; y < h; y += size) {
+            for (let x = 0; x < w; x += size) {
+              let r = 0,
+                g = 0,
+                b = 0,
+                count = 0;
+              for (let dy = 0; dy < size && y + dy < h; dy++) {
+                for (let dx = 0; dx < size && x + dx < w; dx++) {
+                  const p = ((y + dy) * w + (x + dx)) * 4;
+                  r += float[p];
+                  g += float[p + 1];
+                  b += float[p + 2];
+                  count++;
+                }
+              }
+              r /= count;
+              g /= count;
+              b /= count;
+              for (let dy = 0; dy < size && y + dy < h; dy++) {
+                for (let dx = 0; dx < size && x + dx < w; dx++) {
+                  const p = ((y + dy) * w + (x + dx)) * 4;
+                  float[p] = r;
+                  float[p + 1] = g;
+                  float[p + 2] = b;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // ─── Effects (Vignette, Tilt-Shift, Gradient Map) ─────────
+
+      function applyEffects(float, w, h) {
+        const len = float.length;
+        // Vignette
+        const vignette = state.effects.vignette;
+        if (vignette !== 0) {
+          const strength = vignette / 100;
+          const cx = w / 2,
+            cy = h / 2;
+          const maxDist = Math.sqrt(cx * cx + cy * cy);
+          for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+              const dx = x - cx,
+                dy = y - cy;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              const factor = 1 - strength * (dist / maxDist);
+              const idx = (y * w + x) * 4;
+              float[idx] = clamp(float[idx] * factor, 0, 1);
+              float[idx + 1] = clamp(float[idx + 1] * factor, 0, 1);
+              float[idx + 2] = clamp(float[idx + 2] * factor, 0, 1);
+            }
+          }
+        }
+
+        // Tilt-Shift (simulate blur gradient)
+        const tiltShift = state.effects.tiltShift;
+        if (tiltShift !== 0) {
+          const strength = tiltShift / 100;
+          const radius = Math.max(1, Math.round(strength * 10));
+          const half = Math.floor(radius / 2);
+          const tempData = new Uint8ClampedArray(len);
+          for (let i = 0; i < len; i++) tempData[i] = Math.round(clamp(float[i] * 255, 0, 255));
+          const tempImg = new ImageData(tempData, w, h);
+          const blurred = boxBlur(tempImg, radius);
+          const centerY = h / 2;
+          const range = h * 0.3;
+          for (let y = 0; y < h; y++) {
+            const distFromCenter = Math.abs(y - centerY);
+            const blend = clamp(distFromCenter / range, 0, 1);
+            for (let x = 0; x < w; x++) {
+              const idx = (y * w + x) * 4;
+              float[idx] = lerp(float[idx], blurred.data[idx] / 255, blend * strength);
+              float[idx + 1] = lerp(float[idx + 1], blurred.data[idx + 1] / 255, blend * strength);
+              float[idx + 2] = lerp(float[idx + 2], blurred.data[idx + 2] / 255, blend * strength);
+            }
+          }
+        }
+
+        // Gradient Map
+        if (state.effects.gradientMap) {
+          const colors = state.effects.gradientColors;
+          if (colors.length >= 2) {
+            const stops = colors.map((c, i) => ({
+              pos: i / (colors.length - 1),
+              rgb: hexToRgb(c)
+            }));
+            for (let i = 0; i < len; i += 4) {
+              const gray = 0.299 * float[i] + 0.587 * float[i + 1] + 0.114 * float[i + 2];
+              let r, g, b;
+              for (let s = 0; s < stops.length - 1; s++) {
+                const p0 = stops[s],
+                  p1 = stops[s + 1];
+                if (gray >= p0.pos && gray <= p1.pos) {
+                  const t = (gray - p0.pos) / (p1.pos - p0.pos);
+                  r = lerp(p0.rgb.r, p1.rgb.r, t);
+                  g = lerp(p0.rgb.g, p1.rgb.g, t);
+                  b = lerp(p0.rgb.b, p1.rgb.b, t);
+                  break;
+                }
+              }
+              if (r === undefined) {
+                const last = stops[stops.length - 1];
+                r = last.rgb.r;
+                g = last.rgb.g;
+                b = last.rgb.b;
+              }
+              float[i] = r / 255;
+              float[i + 1] = g / 255;
+              float[i + 2] = b / 255;
+            }
+          }
+        }
+      }
+
+      // ─── Convolution helper ─────────────────────────────────────
+
+      function convolve(imageData, kernel, divisor) {
+        const w = imageData.width,
+          h = imageData.height;
+        const data = imageData.data;
+        const out = new Uint8ClampedArray(data.length);
+        const size = Math.sqrt(kernel.length);
+        const half = Math.floor(size / 2);
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            let r = 0,
+              g = 0,
+              b = 0;
+            for (let ky = 0; ky < size; ky++) {
+              for (let kx = 0; kx < size; kx++) {
+                const px = clamp(x + kx - half, 0, w - 1);
+                const py = clamp(y + ky - half, 0, h - 1);
+                const idx = (py * w + px) * 4;
+                const k = kernel[ky * size + kx];
+                r += data[idx] * k;
+                g += data[idx + 1] * k;
+                b += data[idx + 2] * k;
+              }
+            }
+            const idx = (y * w + x) * 4;
+            out[idx] = clamp(r / divisor, 0, 255);
+            out[idx + 1] = clamp(g / divisor, 0, 255);
+            out[idx + 2] = clamp(b / divisor, 0, 255);
+            out[idx + 3] = data[idx + 3];
+          }
+        }
+        return new ImageData(out, w, h);
+      }
+
+      // ─── Box Blur ─────────────────────────────────────────────────
+
+      function boxBlur(imageData, radius) {
+        const w = imageData.width,
+          h = imageData.height;
+        const data = imageData.data;
+        const out = new Uint8ClampedArray(data.length);
+        const size = radius * 2 + 1;
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            let r = 0,
+              g = 0,
+              b = 0,
+              a = 0,
+              count = 0;
+            for (let dy = -radius; dy <= radius; dy++) {
+              for (let dx = -radius; dx <= radius; dx++) {
+                const px = clamp(x + dx, 0, w - 1);
+                const py = clamp(y + dy, 0, h - 1);
+                const idx = (py * w + px) * 4;
+                r += data[idx];
+                g += data[idx + 1];
+                b += data[idx + 2];
+                a += data[idx + 3];
+                count++;
+              }
+            }
+            const idx = (y * w + x) * 4;
+            out[idx] = r / count;
+            out[idx + 1] = g / count;
+            out[idx + 2] = b / count;
+            out[idx + 3] = a / count;
+          }
+        }
+        return new ImageData(out, w, h);
+      }
+
+      // ─── Drawing overlay with blend mode ────────────────────────
+
+      function drawOverlay() {
+        // We will draw the overlay canvas with the current blend mode.
+        // The overlay canvas already contains drawn strokes.
+        // We'll composite it onto the main canvas with the selected blend mode.
+        // But we need to apply blend mode when merging.
+        // For performance, we can merge on apply.
+        // We'll just draw the overlay as is for preview.
+        // The actual blend mode is applied when "Apply Drawing" is clicked.
+        // We'll redraw the overlay content.
+        // Nothing else needed here.
+      }
+
+      // ─── History ──────────────────────────────────────────────────
+
+      function saveHistory() {
+        if (!state.image) return;
+        const dataURL = canvas.toDataURL('image/png');
+        const filterState = JSON.parse(JSON.stringify({
+          adjust: state.adjust,
+          curves: state.curves,
+          levels: state.levels,
+          filters: state.filters,
+          effects: state.effects,
+          transform: state.transform,
+        }));
+        if (state.historyIndex < state.history.length - 1) {
+          state.history = state.history.slice(0, state.historyIndex + 1);
+        }
+        state.history.push({ dataURL, filterState });
+        if (state.history.length > state.maxHistory) {
+          state.history.shift();
+        }
+        state.historyIndex = state.history.length - 1;
+        updateUndoRedoButtons();
+        state.isDirty = true;
+        exportBtn.disabled = false;
+      }
+
+      function restoreHistory(index) {
+        const entry = state.history[index];
+        if (!entry) return;
+        const img = new Image();
+        img.onload = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          Object.assign(state.adjust, entry.filterState.adjust);
+          Object.assign(state.curves, entry.filterState.curves);
+          Object.assign(state.levels, entry.filterState.levels);
+          Object.assign(state.filters, entry.filterState.filters);
+          Object.assign(state.effects, entry.filterState.effects);
+          Object.assign(state.transform, entry.filterState.transform);
+          syncAllUI();
+          updateCropOverlay();
+          updateStatus('Restored');
+        };
+        img.src = entry.dataURL;
+      }
+
+      function undo() {
+        if (state.historyIndex <= 0) return;
+        state.historyIndex--;
+        restoreHistory(state.historyIndex);
+        updateUndoRedoButtons();
+      }
+
+      function redo() {
+        if (state.historyIndex >= state.history.length - 1) return;
+        state.historyIndex++;
+        restoreHistory(state.historyIndex);
+        updateUndoRedoButtons();
+      }
+
+      function updateUndoRedoButtons() {
+        undoBtn.disabled = state.historyIndex <= 0;
+        redoBtn.disabled = state.historyIndex >= state.history.length - 1;
+      }
+
+      // ─── UI Sync ──────────────────────────────────────────────────
+
+      function syncAllUI() {
+        document.querySelectorAll('.adjust-slider').forEach(el => {
+          const key = el.dataset.key;
+          if (key in state.adjust) {
+            el.value = state.adjust[key];
+            const display = el.closest('.slider-row')?.querySelector('.value');
+            if (display) display.textContent = state.adjust[key];
+          }
+        });
+        document.querySelectorAll('.filter-btn').forEach(el => {
+          const key = el.dataset.filter;
+          if (key in state.filters) {
+            el.classList.toggle('active-filter', !!state.filters[key]);
+          }
+        });
+        document.querySelectorAll('.effect-slider').forEach(el => {
+          const key = el.dataset.key;
+          if (key in state.effects) {
+            el.value = state.effects[key];
+            const display = el.closest('.slider-row')?.querySelector('.value');
+            if (display) display.textContent = state.effects[key];
+          }
+        });
+        ['inputBlack', 'inputWhite', 'outputBlack', 'outputWhite'].forEach(k => {
+          const el = document.querySelector(`.levels-slider[data-key="${k}"]`);
+          if (el) {
+            el.value = state.levels[k];
+            const display = el.closest('.slider-row')?.querySelector('.value');
+            if (display) display.textContent = state.levels[k];
+          }
+        });
+        const drawColor = document.getElementById('drawColor');
+        if (drawColor) drawColor.value = state.draw.color;
+        const drawSize = document.getElementById('drawSize');
+        if (drawSize) drawSize.value = state.draw.size;
+        const drawOpacity = document.getElementById('drawOpacity');
+        if (drawOpacity) drawOpacity.value = state.draw.opacity;
+        const drawText = document.getElementById('drawText');
+        if (drawText) drawText.value = state.draw.text;
+        const drawFontSize = document.getElementById('drawFontSize');
+        if (drawFontSize) drawFontSize.value = state.draw.fontSize;
+        const blendMode = document.getElementById('drawBlendMode');
+        if (blendMode) blendMode.value = state.draw.blendMode;
+        const expFormat = document.getElementById('exportFormat');
+        if (expFormat) expFormat.value = state.export.format;
+        const expQuality = document.getElementById('exportQuality');
+        if (expQuality) expQuality.value = state.export.quality;
+        // Gradient colors
+        const grad1 = document.getElementById('gradColor1');
+        const grad2 = document.getElementById('gradColor2');
+        if (grad1 && state.effects.gradientColors.length >= 1) grad1.value = state.effects.gradientColors[0];
+        if (grad2 && state.effects.gradientColors.length >= 2) grad2.value = state.effects.gradientColors[1];
+        // Gradient map toggle
+        const gradToggle = document.getElementById('gradToggle');
+        if (gradToggle) gradToggle.checked = state.effects.gradientMap;
+      }
+
+      // ─── Status ──────────────────────────────────────────────────
+
+      function updateStatus(msg) {
+        statusText.textContent = msg;
+      }
+
+      // ─── Crop ────────────────────────────────────────────────────
+
+      function updateCropOverlay() {
+        if (!state.crop.active || !state.image) {
+          cropOverlay.classList.remove('active');
+          return;
+        }
+        cropOverlay.classList.add('active');
+        const c = state.crop;
+        const canvasRect = canvas.getBoundingClientRect();
+        const wrapperRect = canvasWrapper.getBoundingClientRect();
+        const dispScale = canvasRect.width / canvas.width;
+        const left = c.x * dispScale;
+        const top = c.y * dispScale;
+        const width = c.w * dispScale;
+        const height = c.h * dispScale;
+        cropOverlay.style.left = left + 'px';
+        cropOverlay.style.top = top + 'px';
+        cropOverlay.style.width = width + 'px';
+        cropOverlay.style.height = height + 'px';
+        document.getElementById('cropInfo').textContent = `${Math.round(c.w)}×${Math.round(c.h)}`;
+      }
+
+      function startCrop() {
+        if (!state.image) return;
+        state.crop.active = true;
+        state.crop.x = 0;
+        state.crop.y = 0;
+        state.crop.w = state.image.width;
+        state.crop.h = state.image.height;
+        state.crop.aspectRatio = null;
+        updateCropOverlay();
+      }
+
+      function applyCrop() {
+        if (!state.crop.active || !state.image) return;
+        const c = state.crop;
+        const w = Math.max(1, Math.round(c.w));
+        const h = Math.max(1, Math.round(c.h));
+        const x = Math.round(c.x);
+        const y = Math.round(c.y);
+        const imageData = ctx.getImageData(x, y, w, h);
+        const newCanvas = document.createElement('canvas');
+        newCanvas.width = w;
+        newCanvas.height = h;
+        const newCtx = newCanvas.getContext('2d');
+        newCtx.putImageData(imageData, 0, 0);
+        const img = new Image();
+        img.onload = () => {
+          state.image = img;
+          state.crop.active = false;
+          cropOverlay.classList.remove('active');
+          resetAllAdjustments(false);
+          fitCanvasToContainer();
+          saveHistory();
+          updateStatus('Cropped');
+        };
+        img.src = newCanvas.toDataURL('image/png');
+      }
+
+      function cancelCrop() {
+        state.crop.active = false;
+        cropOverlay.classList.remove('active');
+      }
+
+      // ─── Reset ───────────────────────────────────────────────────
+
+      function resetAllAdjustments(save = true) {
+        state.adjust = {
+          exposure: 0,
+          contrast: 0,
+          highlights: 0,
+          shadows: 0,
+          whites: 0,
+          blacks: 0,
+          temperature: 0,
+          tint: 0,
+          vibrance: 0,
+          saturation: 0,
+          clarity: 0,
+          dehaze: 0,
+          sharpness: 0,
+          blur: 0,
+        };
+        state.curves = {
+          rgb: Array.from({ length: 256 }, (_, i) => i),
+          red: Array.from({ length: 256 }, (_, i) => i),
+          green: Array.from({ length: 256 }, (_, i) => i),
+          blue: Array.from({ length: 256 }, (_, i) => i),
+        };
+        state.levels = {
+          inputBlack: 0,
+          inputWhite: 255,
+          outputBlack: 0,
+          outputWhite: 255,
+        };
+        state.filters = {
+          grayscale: false,
+          sepia: false,
+          invert: false,
+          vintage: false,
+          warm: false,
+          cool: false,
+          duotone: false,
+          edge: false,
+          emboss: false,
+          pixelate: 0,
+          posterize: 0,
+          oil: 0,
+        };
+        state.effects = {
+          vignette: 0,
+          tiltShift: 0,
+          gradientMap: false,
+          gradientColors: ['#000000', '#ffffff'],
+        };
+        state.transform = {
+          rotation: 0,
+          flipH: false,
+          flipV: false,
+        };
+        syncAllUI();
+        if (state.image) {
+          renderImage();
+          if (save) saveHistory();
+          updateStatus('Reset');
+        }
+      }
+
+      // ─── Transform ──────────────────────────────────────────────
+
+      function applyTransform() {
+        if (!state.image) return;
+        let img = state.image;
+        let w = img.width,
+          h = img.height;
+        const rot = state.transform.rotation;
+        const flipH = state.transform.flipH;
+        const flipV = state.transform.flipV;
+        let tempCanvas = document.createElement('canvas');
+        let tempCtx = tempCanvas.getContext('2d');
+        const rad = rot * Math.PI / 180;
+        const sin = Math.abs(Math.sin(rad));
+        const cos = Math.abs(Math.cos(rad));
+        const newW = Math.floor(w * cos + h * sin);
+        const newH = Math.floor(w * sin + h * cos);
+        tempCanvas.width = newW;
+        tempCanvas.height = newH;
+        tempCtx.translate(newW / 2, newH / 2);
+        tempCtx.rotate(rad);
+        tempCtx.drawImage(img, -w / 2, -h / 2);
+        if (flipH || flipV) {
+          const flipCanvas = document.createElement('canvas');
+          flipCanvas.width = newW;
+          flipCanvas.height = newH;
+          const flipCtx = flipCanvas.getContext('2d');
+          flipCtx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+          flipCtx.drawImage(tempCanvas, flipH ? -newW : 0, flipV ? -newH : 0);
+          tempCanvas = flipCanvas;
+          tempCtx = flipCtx;
+        }
+        const newImg = new Image();
+        newImg.onload = () => {
+          state.image = newImg;
+          resetAllAdjustments(false);
+          fitCanvasToContainer();
+          saveHistory();
+          updateStatus('Transform applied');
+        };
+        newImg.src = tempCanvas.toDataURL('image/png');
+      }
+
+      // ─── Auto Enhance ────────────────────────────────────────────
+
+      function autoEnhance() {
+        if (!state.image) return;
+        // Simple auto: auto levels, auto contrast
+        const w = canvas.width,
+          h = canvas.height;
+        const data = ctx.getImageData(0, 0, w, h).data;
+        let min = 255,
+          max = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          for (let c = 0; c < 3; c++) {
+            const v = data[i + c];
+            if (v < min) min = v;
+            if (v > max) max = v;
+          }
+        }
+        const range = max - min;
+        if (range > 10) {
+          state.levels.inputBlack = min;
+          state.levels.inputWhite = max;
+          state.levels.outputBlack = 0;
+          state.levels.outputWhite = 255;
+        }
+        // Slight contrast boost
+        state.adjust.contrast = 10;
+        // Slight vibrance
+        state.adjust.vibrance = 15;
+        syncAllUI();
+        renderImage();
+        saveHistory();
+        updateStatus('Auto enhanced');
+      }
+
+      // ─── Export ──────────────────────────────────────────────────
+
+      function exportImage() {
+        if (!state.image) return;
+        const fmt = state.export.format;
+        const quality = state.export.quality / 100;
+        const mime = fmt === 'jpeg' ? 'image/jpeg' : fmt === 'webp' ? 'image/webp' : 'image/png';
+        const ext = fmt === 'jpeg' ? 'jpg' : fmt;
+        const dataURL = canvas.toDataURL(mime, quality);
+        const link = document.createElement('a');
+        link.download = `hari-editor-${Date.now()}.${ext}`;
+        link.href = dataURL;
+        link.click();
+        updateStatus(`Exported as ${ext.toUpperCase()}`);
+      }
+
+      // ─── Upload ──────────────────────────────────────────────────
+
+      function loadImage(file) {
+        if (!file || !file.type.startsWith('image/')) {
+          updateStatus('Please select an image file');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            state.image = img;
+            state.history = [];
+            state.historyIndex = -1;
+            resetAllAdjustments(false);
+            uploadZone.classList.add('hidden');
+            fitCanvasToContainer();
+            saveHistory();
+            updateStatus(`Loaded: ${file.name} (${img.width}×${img.height})`);
+            exportBtn.disabled = false;
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // ─── Panel Rendering ────────────────────────────────────────
+
+      function renderPanel(tab) {
+        state.activeTab = tab;
+        document.querySelectorAll('.panel-tabs button').forEach(b => {
+          b.classList.toggle('active', b.dataset.tab === tab);
+        });
+        let html = '';
+        switch (tab) {
+          case 'adjust':
+            html = buildAdjustPanel();
+            break;
+          case 'color':
+            html = buildColorPanel();
+            break;
+          case 'filters':
+            html = buildFiltersPanel();
+            break;
+          case 'effects':
+            html = buildEffectsPanel();
+            break;
+          case 'transform':
+            html = buildTransformPanel();
+            break;
+          case 'crop':
+            html = buildCropPanel();
+            break;
+          case 'draw':
+            html = buildDrawPanel();
+            break;
+          case 'export':
+            html = buildExportPanel();
+            break;
+          default:
+            html = '<div>Select a tool</div>';
+        }
+        panelContent.innerHTML = html;
+        bindPanelEvents(tab);
+        syncAllUI();
+        if (tab === 'color') {
+          renderCurveEditor();
+          renderHistogram();
+        }
+      }
+
+      function buildAdjustPanel() {
+        const sliders = [
+          { key: 'exposure', label: 'Exposure', min: -5, max: 5, step: 0.1 },
+          { key: 'contrast', label: 'Contrast', min: -100, max: 100, step: 1 },
+          { key: 'highlights', label: 'Highlights', min: -100, max: 100, step: 1 },
+          { key: 'shadows', label: 'Shadows', min: -100, max: 100, step: 1 },
+          { key: 'whites', label: 'Whites', min: -100, max: 100, step: 1 },
+          { key: 'blacks', label: 'Blacks', min: -100, max: 100, step: 1 },
+          { key: 'temperature', label: 'Temp', min: -100, max: 100, step: 1 },
+          { key: 'tint', label: 'Tint', min: -100, max: 100, step: 1 },
+          { key: 'vibrance', label: 'Vibrance', min: -100, max: 100, step: 1 },
+          { key: 'saturation', label: 'Saturation', min: -100, max: 100, step: 1 },
+          { key: 'clarity', label: 'Clarity', min: -100, max: 100, step: 1 },
+          { key: 'dehaze', label: 'Dehaze', min: -100, max: 100, step: 1 },
+          { key: 'sharpness', label: 'Sharpness', min: 0, max: 100, step: 1 },
+          { key: 'blur', label: 'Blur', min: 0, max: 20, step: 0.5 },
+        ];
+        let html = '<div class="control-group"><button class="primary" id="applyAdjustBtn">Apply Adjustments</button></div>';
+        sliders.forEach(s => {
+          html += `
+            <div class="control-group">
+              <label>${s.label}</label>
+              <div class="slider-row">
+                <input type="range" class="adjust-slider" data-key="${s.key}" min="${s.min}" max="${s.max}" step="${s.step}" value="0" />
+                <span class="value">0</span>
+              </div>
+            </div>
+          `;
+        });
+        html += `<div class="control-group"><button id="resetAdjustBtn">Reset Adjustments</button></div>`;
+        return html;
+      }
+
+      function buildColorPanel() {
+        return `
+          <div class="control-group">
+            <label>Curves (click to add point, right-click to remove)</label>
+            <canvas class="curve-editor" id="curveEditor" width="256" height="120"></canvas>
+            <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">
+              <button class="curve-channel active" data-channel="rgb">RGB</button>
+              <button class="curve-channel" data-channel="red">Red</button>
+              <button class="curve-channel" data-channel="green">Green</button>
+              <button class="curve-channel" data-channel="blue">Blue</button>
+              <button id="resetCurvesBtn">Reset Curves</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <label>Levels</label>
+            <div class="slider-row">
+              <label style="flex:1;">Input Black <input type="range" class="levels-slider" data-key="inputBlack" min="0" max="255" value="0" /></label>
+              <span class="value">0</span>
+            </div>
+            <div class="slider-row">
+              <label style="flex:1;">Input White <input type="range" class="levels-slider" data-key="inputWhite" min="0" max="255" value="255" /></label>
+              <span class="value">255</span>
+            </div>
+            <div class="slider-row">
+              <label style="flex:1;">Output Black <input type="range" class="levels-slider" data-key="outputBlack" min="0" max="255" value="0" /></label>
+              <span class="value">0</span>
+            </div>
+            <div class="slider-row">
+              <label style="flex:1;">Output White <input type="range" class="levels-slider" data-key="outputWhite" min="0" max="255" value="255" /></label>
+              <span class="value">255</span>
+            </div>
+            <button id="autoLevelsBtn">Auto Levels</button>
+          </div>
+          <div class="control-group">
+            <label>Histogram</label>
+            <canvas class="histogram-canvas" id="histogramCanvas" width="256" height="60"></canvas>
+          </div>
+        `;
+      }
+
+      function buildFiltersPanel() {
+        const filters = [
+          { key: 'grayscale', label: 'Grayscale' },
+          { key: 'sepia', label: 'Sepia' },
+          { key: 'invert', label: 'Invert' },
+          { key: 'vintage', label: 'Vintage' },
+          { key: 'warm', label: 'Warm' },
+          { key: 'cool', label: 'Cool' },
+          { key: 'duotone', label: 'Duotone' },
+          { key: 'edge', label: 'Edge Detect' },
+          { key: 'emboss', label: 'Emboss' },
+        ];
+        let html = '<div class="control-group"><label>One‑Click Filters</label><div class="filter-buttons">';
+        filters.forEach(f => {
+          html += `<button class="filter-btn" data-filter="${f.key}">${f.label}</button>`;
+        });
+        html += '</div></div>';
+        html += `
+          <div class="control-group">
+            <label>Pixelate <span class="value" id="pixelateVal">0</span></label>
+            <input type="range" class="filter-slider" data-filter="pixelate" min="0" max="20" value="0" id="pixelateSlider" />
+          </div>
+          <div class="control-group">
+            <label>Posterize <span class="value" id="posterizeVal">0</span></label>
+            <input type="range" class="filter-slider" data-filter="posterize" min="0" max="10" value="0" id="posterizeSlider" />
+          </div>
+          <div class="control-group">
+            <label>Oil Paint <span class="value" id="oilVal">0</span></label>
+            <input type="range" class="filter-slider" data-filter="oil" min="0" max="10" value="0" id="oilSlider" />
+          </div>
+          <div class="control-group">
+            <button class="primary" id="applyFiltersBtn">Apply Filters</button>
+            <button id="resetFiltersBtn">Reset Filters</button>
+          </div>
+        `;
+        return html;
+      }
+
+      function buildEffectsPanel() {
+        return `
+          <div class="control-group">
+            <label>Vignette <span class="value" id="vignetteVal">0</span></label>
+            <input type="range" class="effect-slider" data-key="vignette" min="0" max="100" value="0" id="vignetteSlider" />
+          </div>
+          <div class="control-group">
+            <label>Tilt-Shift <span class="value" id="tiltShiftVal">0</span></label>
+            <input type="range" class="effect-slider" data-key="tiltShift" min="0" max="100" value="0" id="tiltShiftSlider" />
+          </div>
+          <div class="control-group">
+            <label>Gradient Map</label>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <input type="color" id="gradColor1" value="#000000" />
+              <input type="color" id="gradColor2" value="#ffffff" />
+              <label style="flex-direction:row;gap:4px;align-items:center;">
+                <input type="checkbox" id="gradToggle" /> Enable
+              </label>
+            </div>
+          </div>
+          <div class="control-group">
+            <button class="primary" id="applyEffectsBtn">Apply Effects</button>
+            <button id="resetEffectsBtn">Reset Effects</button>
+          </div>
+        `;
+      }
+
+      function buildTransformPanel() {
+        return `
+          <div class="control-group">
+            <label>Rotate</label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button id="rotLeft">↺ 90°</button>
+              <button id="rotRight">↻ 90°</button>
+              <button id="rot180">⟳ 180°</button>
+              <button id="rotCustom">Custom: <input type="number" id="rotAngle" value="0" step="1" style="width:60px;" /> °</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <label>Flip</label>
+            <div style="display:flex;gap:6px;">
+              <button id="flipH">↔ Horizontal</button>
+              <button id="flipV">↕ Vertical</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <button class="primary" id="applyTransformBtn">Apply Transform</button>
+          </div>
+        `;
+      }
+
+      function buildCropPanel() {
+        return `
+          <div class="control-group">
+            <label>Aspect Ratio</label>
+            <select id="cropRatio">
+              <option value="free">Free</option>
+              <option value="1:1">1:1 Square</option>
+              <option value="4:3">4:3</option>
+              <option value="16:9">16:9</option>
+              <option value="3:2">3:2</option>
+              <option value="2:3">2:3</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <button class="primary" id="applyCropBtn">✂️ Apply Crop</button>
+            <button id="cancelCropBtn">Cancel</button>
+            <button id="resetCropBtn">Reset Crop</button>
+          </div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:6px;">
+            Drag the box or resize using handles.
+          </div>
+        `;
+      }
+
+      function buildDrawPanel() {
+        const blendModes = ['source-over', 'multiply', 'screen', 'overlay', 'difference', 'lighten', 'darken'];
+        let html = `
+          <div class="control-group">
+            <label>Tool</label>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+              <button class="draw-tool" data-tool="brush">🖌 Brush</button>
+              <button class="draw-tool" data-tool="eraser">🧹 Eraser</button>
+              <button class="draw-tool" data-tool="rect">▭ Rect</button>
+              <button class="draw-tool" data-tool="circle">◯ Circle</button>
+              <button class="draw-tool" data-tool="line">━ Line</button>
+              <button class="draw-tool" data-tool="text">T Text</button>
+            </div>
+          </div>
+          <div class="control-group color-picker-row">
+            <label>Color <input type="color" id="drawColor" value="#ffffff" /></label>
+            <label>Size <input type="number" id="drawSize" value="10" min="1" max="100" style="width:60px;" /></label>
+            <label>Opacity <input type="range" id="drawOpacity" min="0" max="1" step="0.05" value="1" style="width:80px;" /></label>
+          </div>
+          <div class="control-group">
+            <label>Blend Mode</label>
+            <select id="drawBlendMode" class="blend-mode-select">
+              ${blendModes.map(m => `<option value="${m}">${m}</option>`).join('')}
+            </select>
+          </div>
+          <div class="control-group">
+            <label>Text <input type="text" id="drawText" value="Hello" /></label>
+            <label>Font Size <input type="number" id="drawFontSize" value="24" min="8" max="200" style="width:60px;" /></label>
+          </div>
+          <div class="control-group">
+            <button class="primary" id="applyDrawBtn">Apply Drawing</button>
+            <button id="clearDrawBtn">Clear Drawing</button>
+          </div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">
+            Draw directly on the image. Click Apply to commit with blend mode.
+          </div>
+        `;
+        return html;
+      }
+
+      function buildExportPanel() {
+        return `
+          <div class="control-group">
+            <label>Format</label>
+            <select id="exportFormat">
+              <option value="png">PNG</option>
+              <option value="jpeg">JPEG</option>
+              <option value="webp">WebP</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>Quality (JPEG/WebP)</label>
+            <input type="range" id="exportQuality" min="1" max="100" value="92" />
+            <span class="value" id="exportQualityVal">92</span>
+          </div>
+          <div class="control-group">
+            <button class="primary" id="exportNowBtn">⬇ Export Image</button>
+          </div>
+        `;
+      }
+
+      // ─── Bind Panel Events ──────────────────────────────────────
+
+      function bindPanelEvents(tab) {
+        // Adjust sliders
+        document.querySelectorAll('.adjust-slider').forEach(el => {
+          el.addEventListener('input', () => {
+            const key = el.dataset.key;
+            const val = parseFloat(el.value);
+            state.adjust[key] = val;
+            const display = el.closest('.slider-row')?.querySelector('.value');
+            if (display) display.textContent = val;
+            if (state.image) renderImage();
+          });
+        });
+        const applyAdjust = document.getElementById('applyAdjustBtn');
+        if (applyAdjust) {
+          applyAdjust.addEventListener('click', () => {
+            if (state.image) { renderImage();
+              saveHistory();
+              updateStatus('Adjustments applied'); }
+          });
+        }
+        const resetAdjust = document.getElementById('resetAdjustBtn');
+        if (resetAdjust) {
+          resetAdjust.addEventListener('click', () => {
+            const keys = ['exposure', 'contrast', 'highlights', 'shadows', 'whites', 'blacks',
+              'temperature', 'tint', 'vibrance', 'saturation', 'clarity', 'dehaze', 'sharpness', 'blur'
+            ];
+            keys.forEach(k => state.adjust[k] = 0);
+            syncAllUI();
+            if (state.image) renderImage();
+            updateStatus('Adjustments reset');
+          });
+        }
+
+        // Color panel: curves
+        document.querySelectorAll('.curve-channel').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.curve-channel').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderCurveEditor();
+          });
+        });
+        const resetCurves = document.getElementById('resetCurvesBtn');
+        if (resetCurves) {
+          resetCurves.addEventListener('click', () => {
+            const ch = document.querySelector('.curve-channel.active')?.dataset.channel || 'rgb';
+            state.curves[ch] = Array.from({ length: 256 }, (_, i) => i);
+            renderCurveEditor();
+            if (state.image) renderImage();
+            updateStatus('Curves reset');
+          });
+        }
+        document.querySelectorAll('.levels-slider').forEach(el => {
+          el.addEventListener('input', () => {
+            const key = el.dataset.key;
+            const val = parseInt(el.value);
+            state.levels[key] = val;
+            const display = el.closest('.slider-row')?.querySelector('.value');
+            if (display) display.textContent = val;
+            if (state.image) renderImage();
+          });
+        });
+        const autoLevels = document.getElementById('autoLevelsBtn');
+        if (autoLevels) {
+          autoLevels.addEventListener('click', () => {
+            if (!state.image) return;
+            const w = canvas.width,
+              h = canvas.height;
+            const data = ctx.getImageData(0, 0, w, h).data;
+            let min = 255,
+              max = 0;
+            for (let i = 0; i < data.length; i += 4) {
+              for (let c = 0; c < 3; c++) {
+                const v = data[i + c];
+                if (v < min) min = v;
+                if (v > max) max = v;
+              }
+            }
+            const range = max - min;
+            if (range > 10) {
+              state.levels.inputBlack = min;
+              state.levels.inputWhite = max;
+              state.levels.outputBlack = 0;
+              state.levels.outputWhite = 255;
+              syncAllUI();
+              renderImage();
+              updateStatus('Auto levels applied');
+            }
+          });
+        }
+
+        // Filters
+        document.querySelectorAll('.filter-btn').forEach(el => {
+          el.addEventListener('click', () => {
+            const key = el.dataset.filter;
+            state.filters[key] = !state.filters[key];
+            el.classList.toggle('active-filter', state.filters[key]);
+            if (state.image) renderImage();
+          });
+        });
+        ['pixelate', 'posterize', 'oil'].forEach(key => {
+          const el = document.getElementById(key + 'Slider');
+          if (el) {
+            el.addEventListener('input', () => {
+              const val = parseFloat(el.value);
+              state.filters[key] = val;
+              document.getElementById(key + 'Val').textContent = val;
+              if (state.image) renderImage();
+            });
+          }
+        });
+        const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+        if (applyFiltersBtn) {
+          applyFiltersBtn.addEventListener('click', () => {
+            if (state.image) { renderImage();
+              saveHistory();
+              updateStatus('Filters applied'); }
+          });
+        }
+        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+        if (resetFiltersBtn) {
+          resetFiltersBtn.addEventListener('click', () => {
+            Object.keys(state.filters).forEach(k => {
+              if (typeof state.filters[k] === 'boolean') state.filters[k] = false;
+              else state.filters[k] = 0;
+            });
+            syncAllUI();
+            if (state.image) renderImage();
+            updateStatus('Filters reset');
+          });
+        }
+
+        // Effects
+        ['vignette', 'tiltShift'].forEach(key => {
+          const el = document.getElementById(key + 'Slider');
+          if (el) {
+            el.addEventListener('input', () => {
+              const val = parseFloat(el.value);
+              state.effects[key] = val;
+              document.getElementById(key + 'Val').textContent = val;
+              if (state.image) renderImage();
+            });
+          }
+        });
+        const grad1 = document.getElementById('gradColor1');
+        const grad2 = document.getElementById('gradColor2');
+        if (grad1 && grad2) {
+          const updateGrad = () => {
+            state.effects.gradientColors = [grad1.value, grad2.value];
+            if (state.effects.gradientMap && state.image) renderImage();
+          };
+          grad1.addEventListener('input', updateGrad);
+          grad2.addEventListener('input', updateGrad);
+        }
+        const gradToggle = document.getElementById('gradToggle');
+        if (gradToggle) {
+          gradToggle.addEventListener('change', () => {
+            state.effects.gradientMap = gradToggle.checked;
+            if (state.image) renderImage();
+          });
+        }
+        const applyEffectsBtn = document.getElementById('applyEffectsBtn');
+        if (applyEffectsBtn) {
+          applyEffectsBtn.addEventListener('click', () => {
+            if (state.image) { renderImage();
+              saveHistory();
+              updateStatus('Effects applied'); }
+          });
+        }
+        const resetEffectsBtn = document.getElementById('resetEffectsBtn');
+        if (resetEffectsBtn) {
+          resetEffectsBtn.addEventListener('click', () => {
+            state.effects.vignette = 0;
+            state.effects.tiltShift = 0;
+            state.effects.gradientMap = false;
+            state.effects.gradientColors = ['#000000', '#ffffff'];
+            syncAllUI();
+            if (state.image) renderImage();
+            updateStatus('Effects reset');
+          });
+        }
+
+        // Transform
+        document.getElementById('rotLeft')?.addEventListener('click', () => {
+          state.transform.rotation = (state.transform.rotation - 90) % 360;
+        });
+        document.getElementById('rotRight')?.addEventListener('click', () => {
+          state.transform.rotation = (state.transform.rotation + 90) % 360;
+        });
+        document.getElementById('rot180')?.addEventListener('click', () => {
+          state.transform.rotation = (state.transform.rotation + 180) % 360;
+        });
+        const rotCustom = document.getElementById('rotCustom');
+        if (rotCustom) {
+          rotCustom.addEventListener('click', () => {
+            const angle = parseFloat(document.getElementById('rotAngle').value) || 0;
+            state.transform.rotation = (state.transform.rotation + angle) % 360;
+          });
+        }
+        document.getElementById('flipH')?.addEventListener('click', () => {
+          state.transform.flipH = !state.transform.flipH;
+        });
+        document.getElementById('flipV')?.addEventListener('click', () => {
+          state.transform.flipV = !state.transform.flipV;
+        });
+        const applyTransformBtn = document.getElementById('applyTransformBtn');
+        if (applyTransformBtn) {
+          applyTransformBtn.addEventListener('click', applyTransform);
+        }
+
+        // Crop
+        const cropRatio = document.getElementById('cropRatio');
+        if (cropRatio) {
+          cropRatio.addEventListener('change', () => {
+            const val = cropRatio.value;
+            if (val === 'free') state.crop.aspectRatio = null;
+            else {
+              const parts = val.split(':');
+              state.crop.aspectRatio = parseFloat(parts[0]) / parseFloat(parts[1]);
+            }
+            if (state.crop.active && state.image) {
+              const imgW = state.image.width,
+                imgH = state.image.height;
+              let cw = state.crop.w,
+                ch = state.crop.h;
+              if (state.crop.aspectRatio) {
+                const ratio = state.crop.aspectRatio;
+                if (cw / ch > ratio) ch = cw / ratio;
+                else cw = ch * ratio;
+                if (state.crop.x + cw > imgW) cw = imgW - state.crop.x;
+                if (state.crop.y + ch > imgH) ch = imgH - state.crop.y;
+                state.crop.w = cw;
+                state.crop.h = ch;
+                updateCropOverlay();
+              }
+            }
+          });
+        }
+        document.getElementById('applyCropBtn')?.addEventListener('click', applyCrop);
+        document.getElementById('cancelCropBtn')?.addEventListener('click', cancelCrop);
+        document.getElementById('resetCropBtn')?.addEventListener('click', () => {
+          if (state.image) {
+            state.crop.x = 0;
+            state.crop.y = 0;
+            state.crop.w = state.image.width;
+            state.crop.h = state.image.height;
+            updateCropOverlay();
+          }
+        });
+
+        // Draw
+        document.querySelectorAll('.draw-tool').forEach(el => {
+          el.addEventListener('click', () => {
+            document.querySelectorAll('.draw-tool').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            state.draw.tool = el.dataset.tool;
+            overlayCanvas.classList.add('interactive');
+          });
+        });
+        const drawColor = document.getElementById('drawColor');
+        if (drawColor) drawColor.addEventListener('input', () => state.draw.color = drawColor.value);
+        const drawSize = document.getElementById('drawSize');
+        if (drawSize) drawSize.addEventListener('input', () => state.draw.size = parseFloat(drawSize.value) || 10);
+        const drawOpacity = document.getElementById('drawOpacity');
+        if (drawOpacity) drawOpacity.addEventListener('input', () => state.draw.opacity = parseFloat(drawOpacity.value) || 1);
+        const drawText = document.getElementById('drawText');
+        if (drawText) drawText.addEventListener('input', () => state.draw.text = drawText.value);
+        const drawFontSize = document.getElementById('drawFontSize');
+        if (drawFontSize) drawFontSize.addEventListener('input', () => state.draw.fontSize = parseInt(drawFontSize.value) ||
+          24);
+        const drawBlendMode = document.getElementById('drawBlendMode');
+        if (drawBlendMode) drawBlendMode.addEventListener('change', () => state.draw.blendMode = drawBlendMode.value);
+
+        // Drawing mouse events on overlay canvas
+        overlayCanvas.addEventListener('mousedown', (e) => {
+          if (!state.image) return;
+          if (!state.draw.tool) return;
+          const rect = overlayCanvas.getBoundingClientRect();
+          const scaleX = overlayCanvas.width / rect.width;
+          const scaleY = overlayCanvas.height / rect.height;
+          state.isDrawing = true;
+          state.lastX = (e.clientX - rect.left) * scaleX;
+          state.lastY = (e.clientY - rect.top) * scaleY;
+          if (state.draw.tool === 'text') {
+            const color = state.draw.color;
+            const size = state.draw.fontSize;
+            const text = state.draw.text;
+            overlayCtx.font = `${size}px sans-serif`;
+            overlayCtx.fillStyle = color;
+            overlayCtx.globalAlpha = state.draw.opacity;
+            overlayCtx.fillText(text, state.lastX, state.lastY);
+            overlayCtx.globalAlpha = 1;
+            state.isDrawing = false;
+            return;
+          }
+        });
+
+        overlayCanvas.addEventListener('mousemove', (e) => {
+          if (!state.isDrawing) return;
+          const rect = overlayCanvas.getBoundingClientRect();
+          const scaleX = overlayCanvas.width / rect.width;
+          const scaleY = overlayCanvas.height / rect.height;
+          const x = (e.clientX - rect.left) * scaleX;
+          const y = (e.clientY - rect.top) * scaleY;
+
+          const tool = state.draw.tool;
+          const color = state.draw.color;
+          const size = state.draw.size;
+          const opacity = state.draw.opacity;
+
+          overlayCtx.globalAlpha = opacity;
+          overlayCtx.lineWidth = size;
+          overlayCtx.lineCap = 'round';
+          overlayCtx.lineJoin = 'round';
+
+          if (tool === 'brush' || tool === 'eraser') {
+            const isEraser = tool === 'eraser';
+            overlayCtx.globalCompositeOperation = isEraser ? 'destination-out' : state.draw.blendMode;
+            overlayCtx.strokeStyle = isEraser ? '#fff' : color;
+            overlayCtx.beginPath();
+            overlayCtx.moveTo(state.lastX, state.lastY);
+            overlayCtx.lineTo(x, y);
+            overlayCtx.stroke();
+          } else if (tool === 'rect') {
+            overlayCtx.globalCompositeOperation = state.draw.blendMode;
+            overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            const w = x - state.lastX;
+            const h = y - state.lastY;
+            overlayCtx.strokeStyle = color;
+            overlayCtx.lineWidth = size;
+            overlayCtx.strokeRect(state.lastX, state.lastY, w, h);
+          } else if (tool === 'circle') {
+            overlayCtx.globalCompositeOperation = state.draw.blendMode;
+            overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            const radius = Math.sqrt((x - state.lastX) ** 2 + (y - state.lastY) ** 2);
+            overlayCtx.strokeStyle = color;
+            overlayCtx.lineWidth = size;
+            overlayCtx.beginPath();
+            overlayCtx.arc(state.lastX, state.lastY, radius, 0, Math.PI * 2);
+            overlayCtx.stroke();
+          } else if (tool === 'line') {
+            overlayCtx.globalCompositeOperation = state.draw.blendMode;
+            overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            overlayCtx.strokeStyle = color;
+            overlayCtx.lineWidth = size;
+            overlayCtx.beginPath();
+            overlayCtx.moveTo(state.lastX, state.lastY);
+            overlayCtx.lineTo(x, y);
+            overlayCtx.stroke();
+          }
+          state.lastX = x;
+          state.lastY = y;
+        });
+
+        overlayCanvas.addEventListener('mouseup', () => {
+          state.isDrawing = false;
+        });
+        overlayCanvas.addEventListener('mouseleave', () => {
+          state.isDrawing = false;
+        });
+
+        const applyDrawBtn = document.getElementById('applyDrawBtn');
+        if (applyDrawBtn) {
+          applyDrawBtn.addEventListener('click', () => {
+            if (!state.image) return;
+            const w = canvas.width,
+              h = canvas.height;
+            const mainData = ctx.getImageData(0, 0, w, h);
+            const overlayData = overlayCtx.getImageData(0, 0, w, h);
+            const d1 = mainData.data,
+              d2 = overlayData.data;
+            // Use blend mode
+            const blendMode = state.draw.blendMode;
+            for (let i = 0; i < d1.length; i += 4) {
+              const a = d2[i + 3] / 255;
+              if (a === 0) continue;
+              const sr = d2[i],
+                sg = d2[i + 1],
+                sb = d2[i + 2];
+              let br = d1[i],
+                bg = d1[i + 1],
+                bb = d1[i + 2];
+              // Normalize to 0-1
+              let r = br / 255,
+                g = bg / 255,
+                b = bb / 255;
+              let sr2 = sr / 255,
+                sg2 = sg / 255,
+                sb2 = sb / 255;
+              let result;
+              switch (blendMode) {
+                case 'multiply':
+                  result = [r * sr2, g * sg2, b * sb2];
+                  break;
+                case 'screen':
+                  result = [1 - (1 - r) * (1 - sr2), 1 - (1 - g) * (1 - sg2), 1 - (1 - b) * (1 - sb2)];
+                  break;
+                case 'overlay':
+                  result = [
+                    r < 0.5 ? 2 * r * sr2 : 1 - 2 * (1 - r) * (1 - sr2),
+                    g < 0.5 ? 2 * g * sg2 : 1 - 2 * (1 - g) * (1 - sg2),
+                    b < 0.5 ? 2 * b * sb2 : 1 - 2 * (1 - b) * (1 - sb2)
+                  ];
+                  break;
+                case 'difference':
+                  result = [Math.abs(r - sr2), Math.abs(g - sg2), Math.abs(b - sb2)];
+                  break;
+                case 'lighten':
+                  result = [Math.max(r, sr2), Math.max(g, sg2), Math.max(b, sb2)];
+                  break;
+                case 'darken':
+                  result = [Math.min(r, sr2), Math.min(g, sg2), Math.min(b, sb2)];
+                  break;
+                default:
+                  result = [sr2, sg2, sb2]; // source-over
+              }
+              d1[i] = clamp(Math.round(lerp(br, result[0] * 255, a)), 0, 255);
+              d1[i + 1] = clamp(Math.round(lerp(bg, result[1] * 255, a)), 0, 255);
+              d1[i + 2] = clamp(Math.round(lerp(bb, result[2] * 255, a)), 0, 255);
+            }
+            ctx.putImageData(mainData, 0, 0);
+            overlayCtx.clearRect(0, 0, w, h);
+            saveHistory();
+            updateStatus('Drawing applied with blend mode');
+          });
+        }
+        const clearDrawBtn = document.getElementById('clearDrawBtn');
+        if (clearDrawBtn) {
+          clearDrawBtn.addEventListener('click', () => {
+            overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            updateStatus('Drawing cleared');
+          });
+        }
+
+        // Export
+        const expFormat = document.getElementById('exportFormat');
+        if (expFormat) expFormat.addEventListener('change', () => state.export.format = expFormat.value);
+        const expQuality = document.getElementById('exportQuality');
+        if (expQuality) {
+          expQuality.addEventListener('input', () => {
+            state.export.quality = parseInt(expQuality.value);
+            document.getElementById('exportQualityVal').textContent = state.export.quality;
+          });
+        }
+        const exportNow = document.getElementById('exportNowBtn');
+        if (exportNow) exportNow.addEventListener('click', exportImage);
+      }
+
+      // ─── Curve Editor with Spline ──────────────────────────────
+
+      let curvePoints = {
+        rgb: [
+          [0, 0],
+          [255, 255]
+        ],
+        red: [
+          [0, 0],
+          [255, 255]
+        ],
+        green: [
+          [0, 0],
+          [255, 255]
+        ],
+        blue: [
+          [0, 0],
+          [255, 255]
+        ]
+      };
+      let activeCurveChannel = 'rgb';
+      let curveDragging = false;
+      let curveDragIndex = -1;
+
+      function renderCurveEditor() {
+        const canvas = document.getElementById('curveEditor');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width,
+          h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#1a1a22';
+        ctx.fillRect(0, 0, w, h);
+        ctx.strokeStyle = '#33333d';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i <= 4; i++) {
+          const x = (i / 4) * w;
+          const y = (i / 4) * h;
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, h);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(w, y);
+          ctx.stroke();
+        }
+
+        const channel = document.querySelector('.curve-channel.active')?.dataset.channel || 'rgb';
+        activeCurveChannel = channel;
+        const points = curvePoints[channel] || [
+          [0, 0],
+          [255, 255]
+        ];
+        points.sort((a, b) => a[0] - b[0]);
+
+        // Generate spline curve using catmull-rom interpolation
+        function catmullRom(points, numSegments = 100) {
+          if (points.length < 2) return [];
+          if (points.length === 2) {
+            return [points[0], points[1]];
+          }
+          const pts = [];
+          for (let i = 0; i < points.length - 1; i++) {
+            const p0 = points[Math.max(i - 1, 0)];
+            const p1 = points[i];
+            const p2 = points[i + 1];
+            const p3 = points[Math.min(i + 2, points.length - 1)];
+            for (let t = 0; t <= 1; t += 1 / numSegments) {
+              const t2 = t * t,
+                t3 = t2 * t;
+              const x = 0.5 * ((2 * p1[0]) + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 + (-
+                p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3);
+              const y = 0.5 * ((2 * p1[1]) + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 + (-
+                p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3);
+              pts.push([clamp(x, 0, 255), clamp(y, 0, 255)]);
+            }
+          }
+          return pts;
+        }
+
+        const curve = catmullRom(points, 50);
+        ctx.strokeStyle = '#f5a623';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        curve.forEach((p, idx) => {
+          const px = (p[0] / 255) * w;
+          const py = h - (p[1] / 255) * h;
+          if (idx === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+
+        // Draw control points
+        points.forEach((p, idx) => {
+          const px = (p[0] / 255) * w;
+          const py = h - (p[1] / 255) * h;
+          ctx.beginPath();
+          ctx.arc(px, py, 4, 0, Math.PI * 2);
+          ctx.fillStyle = '#f5a623';
+          ctx.fill();
+          ctx.strokeStyle = '#0d0d0f';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        });
+
+        canvas._points = points;
+        canvas._channel = channel;
+      }
+
+      // Curve interaction
+      document.addEventListener('mousedown', (e) => {
+        const canvas = document.getElementById('curveEditor');
+        if (!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width * canvas.width;
+        const y = (e.clientY - rect.top) / rect.height * canvas.height;
+        const points = canvas._points || [];
+        if (!points.length) return;
+        let found = -1;
+        points.forEach((p, idx) => {
+          const px = (p[0] / 255) * canvas.width;
+          const py = canvas.height - (p[1] / 255) * canvas.height;
+          if (Math.abs(x - px) < 8 && Math.abs(y - py) < 8) found = idx;
+        });
+        if (found >= 0) {
+          curveDragging = true;
+          curveDragIndex = found;
+          return;
+        }
+        // Add new point
+        const newX = clamp(Math.round((x / canvas.width) * 255), 0, 255);
+        const newY = clamp(Math.round((1 - y / canvas.height) * 255), 0, 255);
+        if (points.some(p => Math.abs(p[0] - newX) < 3)) return;
+        points.push([newX, newY]);
+        points.sort((a, b) => a[0] - b[0]);
+        const channel = canvas._channel || 'rgb';
+        state.curves[channel] = pointsToCurve(points);
+        renderCurveEditor();
+        if (state.image) renderImage();
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!curveDragging) return;
+        const canvas = document.getElementById('curveEditor');
+        if (!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width * canvas.width;
+        const y = (e.clientY - rect.top) / rect.height * canvas.height;
+        const points = canvas._points || [];
+        if (curveDragIndex < 0 || curveDragIndex >= points.length) return;
+        let newX = clamp(Math.round((x / canvas.width) * 255), 0, 255);
+        let newY = clamp(Math.round((1 - y / canvas.height) * 255), 0, 255);
+        if (curveDragIndex === 0) newX = 0;
+        if (curveDragIndex === points.length - 1) newX = 255;
+        points[curveDragIndex] = [newX, newY];
+        points.sort((a, b) => a[0] - b[0]);
+        const channel = canvas._channel || 'rgb';
+        state.curves[channel] = pointsToCurve(points);
+        renderCurveEditor();
+        if (state.image) renderImage();
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (curveDragging) {
+          curveDragging = false;
+          curveDragIndex = -1;
+          if (state.image) saveHistory();
+        }
+      });
+
+      function pointsToCurve(points) {
+        const curve = new Array(256);
+        if (points.length === 0) {
+          for (let i = 0; i < 256; i++) curve[i] = i;
+          return curve;
+        }
+        points.sort((a, b) => a[0] - b[0]);
+        // Use spline interpolation for smooth curve
+        const pts = [];
+        for (let i = 0; i < points.length; i++) {
+          pts.push(points[i]);
+        }
+        // Ensure endpoints at 0 and 255
+        if (pts[0][0] !== 0) pts.unshift([0, pts[0][1]]);
+        if (pts[pts.length - 1][0] !== 255) pts.push([255, pts[pts.length - 1][1]]);
+        // Generate spline points
+        const spline = [];
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p0 = pts[Math.max(i - 1, 0)];
+          const p1 = pts[i];
+          const p2 = pts[i + 1];
+          const p3 = pts[Math.min(i + 2, pts.length - 1)];
+          for (let t = 0; t <= 1; t += 0.01) {
+            const t2 = t * t,
+              t3 = t2 * t;
+            const x = 0.5 * ((2 * p1[0]) + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 + (-p0[
+              0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3);
+            const y = 0.5 * ((2 * p1[1]) + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 + (-p0[
+              1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3);
+            spline.push([clamp(x, 0, 255), clamp(y, 0, 255)]);
+          }
+        }
+        // Map to curve array
+        let idx = 0;
+        for (let i = 0; i < 256; i++) {
+          while (idx < spline.length - 1 && spline[idx + 1][0] < i) idx++;
+          if (idx >= spline.length - 1) curve[i] = spline[spline.length - 1][1];
+          else {
+            const x0 = spline[idx][0],
+              y0 = spline[idx][1];
+            const x1 = spline[idx + 1][0],
+              y1 = spline[idx + 1][1];
+            if (x1 === x0) curve[i] = y0;
+            else curve[i] = Math.round(lerp(y0, y1, (i - x0) / (x1 - x0)));
+          }
+        }
+        return curve;
+      }
+
+      // ─── Histogram ──────────────────────────────────────────────
+
+      function renderHistogram() {
+        const canvas = document.getElementById('histogramCanvas');
+        if (!canvas || !state.image) return;
+        const w = canvas.width,
+          h = canvas.height;
+        const ctx = canvas.getContext('2d');
+        // Get current canvas data
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        const hist = new Array(256).fill(0);
+        const len = data.length;
+        for (let i = 0; i < len; i += 4) {
+          const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+          hist[Math.round(lum)]++;
+        }
+        let max = 0;
+        for (let i = 0; i < 256; i++) if (hist[i] > max) max = hist[i];
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#2a2a32';
+        ctx.fillRect(0, 0, w, h);
+        if (max === 0) return;
+        for (let i = 0; i < 256; i++) {
+          const height = (hist[i] / max) * h;
+          ctx.fillStyle = '#f5a623';
+          ctx.fillRect(i * (w / 256), h - height, Math.max(1, w / 256), height);
+        }
+      }
+
+      // ─── Crop Interaction ──────────────────────────────────────
+
+      let cropMouseDown = false;
+      let cropStartX = 0,
+        cropStartY = 0;
+      let cropStartRect = { x: 0, y: 0, w: 0, h: 0 };
+      let activeCropHandle = null;
+
+      cropOverlay.addEventListener('mousedown', (e) => {
+        if (!state.crop.active) return;
+        const target = e.target;
+        const handle = target.dataset.handle;
+        if (handle) {
+          activeCropHandle = handle;
+          cropMouseDown = true;
+          cropStartX = e.clientX;
+          cropStartY = e.clientY;
+          cropStartRect = {
+            x: state.crop.x,
+            y: state.crop.y,
+            w: state.crop.w,
+            h: state.crop.h,
+          };
+          e.preventDefault();
+          return;
+        }
+        cropMouseDown = true;
+        activeCropHandle = 'move';
+        cropStartX = e.clientX;
+        cropStartY = e.clientY;
+        cropStartRect = {
+          x: state.crop.x,
+          y: state.crop.y,
+          w: state.crop.w,
+          h: state.crop.h,
+        };
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!cropMouseDown || !state.crop.active) return;
+        const dx = (e.clientX - cropStartX);
+        const dy = (e.clientY - cropStartY);
+        const imgW = state.image.width;
+        const imgH = state.image.height;
+        const canvasRect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / canvasRect.width;
+        const scaleY = canvas.height / canvasRect.height;
+        const dxi = dx * scaleX;
+        const dyi = dy * scaleY;
+
+        let newX = cropStartRect.x;
+        let newY = cropStartRect.y;
+        let newW = cropStartRect.w;
+        let newH = cropStartRect.h;
+        const ratio = state.crop.aspectRatio;
+
+        const clampCrop = () => {
+          newX = clamp(newX, 0, imgW - 10);
+          newY = clamp(newY, 0, imgH - 10);
+          newW = clamp(newW, 10, imgW - newX);
+          newH = clamp(newH, 10, imgH - newY);
+        };
+
+        if (activeCropHandle === 'move') {
+          newX = clamp(cropStartRect.x + dxi, 0, imgW - cropStartRect.w);
+          newY = clamp(cropStartRect.y + dyi, 0, imgH - cropStartRect.h);
+        } else if (activeCropHandle === 'se') {
+          newW = clamp(cropStartRect.w + dxi, 10, imgW - cropStartRect.x);
+          newH = clamp(cropStartRect.h + dyi, 10, imgH - cropStartRect.y);
+          if (ratio) {
+            if (newW / newH > ratio) newW = newH * ratio;
+            else newH = newW / ratio;
+          }
+        } else if (activeCropHandle === 'ne') {
+          newW = clamp(cropStartRect.w + dxi, 10, imgW - cropStartRect.x);
+          newH = clamp(cropStartRect.h - dyi, 10, cropStartRect.y + cropStartRect.h);
+          newY = cropStartRect.y + cropStartRect.h - newH;
+          if (ratio) {
+            if (newW / newH > ratio) newW = newH * ratio;
+            else newH = newW / ratio;
+          }
+        } else if (activeCropHandle === 'sw') {
+          newW = clamp(cropStartRect.w - dxi, 10, cropStartRect.x + cropStartRect.w);
+          newH = clamp(cropStartRect.h + dyi, 10, imgH - cropStartRect.y);
+          newX = cropStartRect.x + cropStartRect.w - newW;
+          if (ratio) {
+            if (newW / newH > ratio) newW = newH * ratio;
+            else newH = newW / ratio;
+          }
+        } else if (activeCropHandle === 'nw') {
+          newW = clamp(cropStartRect.w - dxi, 10, cropStartRect.x + cropStartRect.w);
+          newH = clamp(cropStartRect.h - dyi, 10, cropStartRect.y + cropStartRect.h);
+          newX = cropStartRect.x + cropStartRect.w - newW;
+          newY = cropStartRect.y + cropStartRect.h - newH;
+          if (ratio) {
+            if (newW / newH > ratio) newW = newH * ratio;
+            else newH = newW / ratio;
+          }
+        } else if (activeCropHandle === 'n') {
+          newH = clamp(cropStartRect.h - dyi, 10, cropStartRect.y + cropStartRect.h);
+          newY = cropStartRect.y + cropStartRect.h - newH;
+          if (ratio) {
+            newW = newH * ratio;
+            if (newX + newW > imgW) newX = imgW - newW;
+          }
+        } else if (activeCropHandle === 's') {
+          newH = clamp(cropStartRect.h + dyi, 10, imgH - cropStartRect.y);
+          if (ratio) {
+            newW = newH * ratio;
+            if (newX + newW > imgW) newX = imgW - newW;
+          }
+        } else if (activeCropHandle === 'w') {
+          newW = clamp(cropStartRect.w - dxi, 10, cropStartRect.x + cropStartRect.w);
+          newX = cropStartRect.x + cropStartRect.w - newW;
+          if (ratio) {
+            newH = newW / ratio;
+            if (newY + newH > imgH) newY = imgH - newH;
+          }
+        } else if (activeCropHandle === 'e') {
+          newW = clamp(cropStartRect.w + dxi, 10, imgW - cropStartRect.x);
+          if (ratio) {
+            newH = newW / ratio;
+            if (newY + newH > imgH) newY = imgH - newH;
+          }
+        }
+
+        clampCrop();
+        state.crop.x = newX;
+        state.crop.y = newY;
+        state.crop.w = newW;
+        state.crop.h = newH;
+        updateCropOverlay();
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (cropMouseDown) {
+          cropMouseDown = false;
+          activeCropHandle = null;
+        }
+      });
+
+      // ─── Zoom ────────────────────────────────────────────────────
+
+      function zoomIn() {
+        state.zoom = Math.min(5, (state.zoom || 1) + 0.1);
+        fitCanvasToContainer();
+      }
+
+      function zoomOut() {
+        state.zoom = Math.max(0.1, (state.zoom || 1) - 0.1);
+        fitCanvasToContainer();
+      }
+
+      function zoomFit() {
+        state.zoom = 1;
+        fitCanvasToContainer();
+      }
+
+      // ─── Event Bindings ─────────────────────────────────────────
+
+      uploadBtn.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) loadImage(e.target.files[0]);
+        e.target.value = '';
+      });
+      uploadZone.addEventListener('dragover', (e) => { e.preventDefault();
+        uploadZone.classList.add('dragover'); });
+      uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+      uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) loadImage(e.dataTransfer.files[0]);
+      });
+      uploadZone.addEventListener('click', (e) => {
+        if (e.target === uploadZone || e.target.closest('.upload-zone') && !e.target.closest('button')) {
+          fileInput.click();
+        }
+      });
+
+      document.querySelectorAll('.panel-tabs button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          renderPanel(btn.dataset.tab);
+        });
+      });
+
+      undoBtn.addEventListener('click', undo);
+      redoBtn.addEventListener('click', redo);
+      resetBtn.addEventListener('click', () => {
+        if (state.image) {
+          resetAllAdjustments(true);
+          updateStatus('Image reset');
+        }
+      });
+
+      gridToggle.addEventListener('click', () => {
+        state.showGrid = !state.showGrid;
+        gridOverlay.classList.toggle('active', state.showGrid);
+      });
+
+      beforeAfterBtn.addEventListener('mousedown', () => {
+        state.beforeAfter = true;
+        if (state.image) {
+          ctx.drawImage(state.image, 0, 0, canvas.width, canvas.height);
+        }
+      });
+      beforeAfterBtn.addEventListener('mouseup', () => {
+        state.beforeAfter = false;
+        renderImage();
+      });
+      beforeAfterBtn.addEventListener('mouseleave', () => {
+        if (state.beforeAfter) {
+          state.beforeAfter = false;
+          renderImage();
+        }
+      });
+
+      autoEnhanceBtn.addEventListener('click', autoEnhance);
+
+      exportBtn.addEventListener('click', exportImage);
+
+      zoomInBtn.addEventListener('click', zoomIn);
+      zoomOutBtn.addEventListener('click', zoomOut);
+      zoomFitBtn.addEventListener('click', zoomFit);
+
+      document.getElementById('canvasArea').addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          if (e.deltaY < 0) zoomIn();
+          else zoomOut();
+        }
+      }, { passive: false });
+
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+          e.preventDefault();
+          if (e.shiftKey) redo();
+          else undo();
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+          e.preventDefault();
+          redo();
+        }
+        if (e.key === 'Escape') {
+          if (state.crop.active) cancelCrop();
+        }
+      });
+
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          if (state.image) fitCanvasToContainer();
+        }, 150);
+      });
+
+      // ─── Init ────────────────────────────────────────────────────
+
+      canvas.width = 800;
+      canvas.height = 600;
+      canvas.style.width = '800px';
+      canvas.style.height = '600px';
+      overlayCanvas.width = 800;
+      overlayCanvas.height = 600;
+      overlayCanvas.style.width = '800px';
+      overlayCanvas.style.height = '600px';
+      updateStatus('Drop an image to start');
+      exportBtn.disabled = true;
+
+      renderPanel('adjust');
+
+      console.log('🖼️ HARI Editor Pro+ loaded — 100% client-side, private & secure.');
+      console.log('🔒 No data is ever sent to any server. All processing is local.');
+      console.log('✨ New: Blending modes, Gradient Map, Vignette, Tilt-Shift, Auto Enhance, Spline Curves, Posterize, Oil Paint.');
+
+      window.__HARI = { state, canvas, ctx, renderImage, fitCanvasToContainer };
+
+    })();
+  </script>
+</body>
+</html>
